@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Status</title>
   <style>
     html, body {
@@ -23,29 +23,37 @@
     .category {
       margin-bottom: 40px;
       width: 100%;
-      max-width: 800px;
+      max-width: 600px;
       background: #121212;
       padding: 20px;
       border-radius: 12px;
+      text-align: center;
     }
     .category h2 {
       margin: 0 0 20px 0;
-      font-size: 20px;
-      color: #aaa;
+      font-size: 22px;
+      color: #ddd;
     }
-    .monitor-row {
+    .monitor {
       display: flex;
       align-items: center;
-      margin-bottom: 10px;
+      justify-content: space-between;
+      background: #1e1e1e;
+      padding: 10px 20px;
+      border-radius: 10px;
+      margin: 10px 0;
+    }
+    .monitor-name {
+      font-size: 16px;
+      color: #aaa;
     }
     .bars {
       display: flex;
       gap: 4px;
-      flex: 1;
     }
     .bar {
       width: 8px;
-      height: 24px;
+      height: 20px;
       background-color: #2e2e2e;
       border-radius: 4px;
     }
@@ -55,55 +63,78 @@
     .status-label {
       background-color: #2ee882;
       color: #000;
-      padding: 4px 12px;
+      padding: 2px 10px;
       border-radius: 9999px;
       font-weight: bold;
       font-size: 14px;
+      margin-left: 10px;
     }
-    .footnote {
-      font-size: 12px;
-      color: #666;
-      margin-top: 30px;
+    .status-label.down {
+      background-color: #e82e2e;
+      color: #fff;
     }
   </style>
 </head>
 <body>
-  <div class="category">
-    <h2>Server</h2>
-    <div class="monitor-row">
-      <div class="bars">
-        <div class="bar online"></div>
-        <div class="bar online"></div>
-        <div class="bar online"></div>
-        <div class="bar online"></div>
-        <div class="bar online"></div>
-        <div class="bar online"></div>
-        <div class="bar online"></div>
-        <div class="bar online"></div>
-        <div class="bar online"></div>
-        <div class="bar online"></div>
-        <div class="bar online"></div>
-        <div class="bar online"></div>
-        <div class="bar online"></div>
-        <div class="bar online"></div>
-        <div class="bar online"></div>
-        <div class="bar online"></div>
-        <div class="bar online"></div>
-        <div class="bar online"></div>
-        <div class="bar online"></div>
-        <div class="bar online"></div>
-        <div class="bar online"></div>
-        <div class="bar online"></div>
-        <div class="bar online"></div>
-        <div class="bar online"></div>
-        <div class="bar online"></div>
-        <div class="bar online"></div>
-        <div class="bar online"></div>
-        <div class="bar online"></div>
-      </div>
-      <div class="status-label">Up</div>
-    </div>
-    <div class="footnote">Check every 60 seconds.</div>
-  </div>
+  <div id="status-container"></div>
+
+  <script>
+    async function loadStatus() {
+      const response = await fetch('status.txt');
+      const text = await response.text();
+      const container = document.getElementById('status-container');
+      container.innerHTML = '';
+
+      const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+      let currentCategory = null;
+      let categoryDiv = null;
+
+      lines.forEach(line => {
+        if(line.startsWith('[') && line.endsWith(']')) {
+          currentCategory = line.slice(1, -1);
+          categoryDiv = document.createElement('div');
+          categoryDiv.classList.add('category');
+          const h2 = document.createElement('h2');
+          h2.textContent = currentCategory;
+          categoryDiv.appendChild(h2);
+          container.appendChild(categoryDiv);
+        } else if(currentCategory && line.includes('=')) {
+          const [monitorName, status] = line.split('=').map(s => s.trim());
+          const monitorDiv = document.createElement('div');
+          monitorDiv.classList.add('monitor');
+
+          const nameDiv = document.createElement('div');
+          nameDiv.classList.add('monitor-name');
+          nameDiv.textContent = monitorName;
+
+          const barsDiv = document.createElement('div');
+          barsDiv.classList.add('bars');
+
+          for(let i=0; i<5; i++) {
+            const bar = document.createElement('div');
+            bar.classList.add('bar');
+            if(status.toLowerCase() === 'up') bar.classList.add('online');
+            barsDiv.appendChild(bar);
+          }
+
+          const statusLabel = document.createElement('div');
+          statusLabel.classList.add('status-label');
+          if(status.toLowerCase() === 'up') {
+            statusLabel.textContent = 'Up';
+          } else {
+            statusLabel.textContent = 'Down';
+            statusLabel.classList.add('down');
+          }
+
+          monitorDiv.appendChild(nameDiv);
+          monitorDiv.appendChild(barsDiv);
+          monitorDiv.appendChild(statusLabel);
+          categoryDiv.appendChild(monitorDiv);
+        }
+      });
+    }
+
+    loadStatus();
+  </script>
 </body>
 </html>
