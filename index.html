@@ -11,9 +11,99 @@
       width: 100vw;
       height: 100vh;
       background-color: #1e1e1e;
+      font-family: sans-serif;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: start;
+      padding: 40px;
+      box-sizing: border-box;
+    }
+    .category {
+      margin-bottom: 40px;
+      width: 100%;
+      max-width: 800px;
+      background: #121212;
+      padding: 20px;
+      border-radius: 12px;
+    }
+    .category h2 {
+      margin: 0 0 20px 0;
+      font-size: 20px;
+      color: #aaa;
+    }
+    .monitor-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .bars {
+      display: flex;
+      gap: 4px;
+      flex: 1;
+    }
+    .bar {
+      width: 8px;
+      height: 24px;
+      background-color: #2e2e2e;
+      border-radius: 4px;
+    }
+    .bar.online {
+      background-color: #2ee882;
+    }
+    .status-label {
+      background-color: #2ee882;
+      color: #000;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    .footnote {
+      font-size: 12px;
+      color: #666;
+      margin-top: 30px;
     }
   </style>
 </head>
 <body>
+  <div class="category">
+    <h2>Server</h2>
+    <div class="monitor-row">
+      <div class="bars">
+        <div class="bar online"></div>
+        <div class="bar online"></div>
+        <div class="bar online"></div>
+        <div class="bar online"></div>
+        <div class="bar online"></div>
+        <div class="bar online"></div>
+        <div class="bar online"></div>
+        <div class="bar online"></div>
+        <div class="bar online"></div>
+        <div class="bar online"></div>
+        <div class="bar online"></div>
+        <div class="bar online"></div>
+        <div class="bar online"></div>
+        <div class="bar online"></div>
+        <div class="bar online"></div>
+        <div class="bar online"></div>
+        <div class="bar online"></div>
+        <div class="bar online"></div>
+        <div class="bar online"></div>
+        <div class="bar online"></div>
+        <div class="bar online"></div>
+        <div class="bar online"></div>
+        <div class="bar online"></div>
+        <div class="bar online"></div>
+        <div class="bar online"></div>
+        <div class="bar online"></div>
+        <div class="bar online"></div>
+        <div class="bar online"></div>
+      </div>
+      <div class="status-label">Up</div>
+    </div>
+    <div class="footnote">Check every 60 seconds.</div>
+  </div>
 </body>
 </html>
