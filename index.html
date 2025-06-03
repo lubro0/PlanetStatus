@@ -92,6 +92,9 @@
       text-align: center;
       user-select: none;
       text-transform: none;
+      color: #000;
+      background-color: #2ee882;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
     .status-label.red {
       background-color: #e82e2e;
@@ -105,6 +108,9 @@
       background-color: #e8d82e;
       color: #000;
     }
+    .status-label.up, .status-label.down {
+      color: #fff !important;
+    }
   </style>
 </head>
 <body>
@@ -112,19 +118,25 @@
 
   <script>
     const statusColors = {
-      RED: 'red',
-      GREEN: 'green',
-      YELLOW: 'yellow',
-      UP: 'green',
-      DOWN: 'red',
-      WARNING: 'yellow'
+      red: 'red',
+      green: 'green',
+      yellow: 'yellow',
+      up: 'green',
+      down: 'red',
+      warning: 'yellow'
     };
 
-    const statuses = ['RED', 'GREEN', 'YELLOW'];
+    const statuses = ['red', 'green', 'yellow'];
 
     function nextStatus(current) {
       const index = statuses.indexOf(current);
       return statuses[(index + 1) % statuses.length];
+    }
+
+    function formatLabel(status) {
+      if(status.toLowerCase() === 'up') return 'Up';
+      if(status.toLowerCase() === 'down') return 'Down';
+      return status.charAt(0).toUpperCase() + status.slice(1);
     }
 
     async function loadStatus() {
@@ -147,13 +159,13 @@
           categoryDiv.appendChild(h2);
           container.appendChild(categoryDiv);
         } else if(currentCategory && line.includes('=')) {
-          let [monitorName, status] = line.split('=').map(s => s.trim().toUpperCase());
-
-          if(!statusColors[status]) status = 'RED';
+          let [monitorName, status] = line.split('=').map(s => s.trim());
+          const statusKey = status.toLowerCase();
+          const colorClass = statusColors[statusKey] || 'red';
 
           const monitorDiv = document.createElement('div');
           monitorDiv.classList.add('monitor');
-          monitorDiv.dataset.status = status;
+          monitorDiv.dataset.status = statusKey;
 
           const nameDiv = document.createElement('div');
           nameDiv.classList.add('monitor-name');
@@ -164,13 +176,14 @@
 
           for(let i=0; i<5; i++) {
             const bar = document.createElement('div');
-            bar.classList.add('bar', statusColors[status]);
+            bar.classList.add('bar', colorClass);
             barsDiv.appendChild(bar);
           }
 
           const statusLabel = document.createElement('div');
-          statusLabel.classList.add('status-label', statusColors[status]);
-          statusLabel.textContent = status;
+          statusLabel.classList.add('status-label', colorClass);
+          if(statusKey === 'up' || statusKey === 'down') statusLabel.classList.add(statusKey);
+          statusLabel.textContent = formatLabel(status);
 
           monitorDiv.appendChild(nameDiv);
           monitorDiv.appendChild(barsDiv);
@@ -181,11 +194,13 @@
             let newStatus = nextStatus(currentStatus);
             monitorDiv.dataset.status = newStatus;
 
-            statusLabel.textContent = newStatus;
-            statusLabel.className = 'status-label ' + statusColors[newStatus];
+            const newColor = statusColors[newStatus] || 'red';
+            statusLabel.textContent = formatLabel(newStatus);
+            statusLabel.className = 'status-label ' + newColor;
+            if(newStatus === 'up' || newStatus === 'down') statusLabel.classList.add(newStatus);
 
             barsDiv.querySelectorAll('.bar').forEach(bar => {
-              bar.className = 'bar ' + statusColors[newStatus];
+              bar.className = 'bar ' + newColor;
             });
           });
 
