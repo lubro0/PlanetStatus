@@ -1,0 +1,3 @@
+[VPS]
+Main=Up
+IndexVPS=Down
