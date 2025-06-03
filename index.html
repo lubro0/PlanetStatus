@@ -3,13 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Status</title>
+  <title>PlanetStatus</title>
   <style>
     html, body {
-      margin: 0;
-      padding: 0;
-      width: 100vw;
-      height: 100vh;
+      margin: 0; padding: 0;
+      width: 100vw; height: 100vh;
       background-color: #1e1e1e;
       font-family: sans-serif;
       color: #fff;
@@ -18,10 +16,14 @@
       align-items: center;
       justify-content: center;
       box-sizing: border-box;
+      overflow: hidden;
     }
     #status-container {
       width: 100%;
       max-width: 600px;
+      overflow-y: auto;
+      flex: 1;
+      padding-bottom: 20px;
     }
     .category {
       margin-bottom: 40px;
@@ -111,10 +113,47 @@
     .status-label.up, .status-label.down {
       color: #fff !important;
     }
+    #incident-container {
+      width: 100%;
+      max-width: 600px;
+      background: #222;
+      border-radius: 12px;
+      padding: 15px 20px;
+      color: #eee;
+      box-sizing: border-box;
+      max-height: 200px;
+      overflow-y: auto;
+      font-size: 14px;
+      margin-top: 10px;
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      user-select: text;
+    }
+    #incident-container.active {
+      display: flex;
+    }
+    .incident-item {
+      background: #333;
+      padding: 8px 12px;
+      border-radius: 8px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      border-left: 4px solid #e82e2e;
+    }
+    .incident-item.green {
+      border-left-color: #2ee882;
+      background: #274427;
+    }
+    .incident-item.yellow {
+      border-left-color: #e8d82e;
+      background: #4a4620;
+    }
   </style>
 </head>
 <body>
   <div id="status-container"></div>
+  <div id="incident-container"></div>
 
   <script>
     const statusColors = {
@@ -143,11 +182,16 @@
       const response = await fetch('status.txt');
       const text = await response.text();
       const container = document.getElementById('status-container');
+      const incidentContainer = document.getElementById('incident-container');
       container.innerHTML = '';
+      incidentContainer.innerHTML = '';
+      incidentContainer.classList.remove('active');
 
       const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
       let currentCategory = null;
       let categoryDiv = null;
+
+      let incidents = [];
 
       lines.forEach(line => {
         if(line.startsWith('[') && line.endsWith(']')) {
@@ -166,6 +210,9 @@
           const monitorDiv = document.createElement('div');
           monitorDiv.classList.add('monitor');
           monitorDiv.dataset.status = statusKey;
+          monitorDiv.dataset.monitor = monitorName;
+          monitorDiv.dataset.category = currentCategory;
+          monitorDiv.dataset.details = `Kategorie: ${currentCategory}\nMonitor: ${monitorName}\nStatus: ${formatLabel(status)}`;
 
           const nameDiv = document.createElement('div');
           nameDiv.classList.add('monitor-name');
@@ -190,18 +237,21 @@
           monitorDiv.appendChild(statusLabel);
 
           monitorDiv.addEventListener('click', () => {
-            let currentStatus = monitorDiv.dataset.status;
-            let newStatus = nextStatus(currentStatus);
-            monitorDiv.dataset.status = newStatus;
-
-            const newColor = statusColors[newStatus] || 'red';
-            statusLabel.textContent = formatLabel(newStatus);
-            statusLabel.className = 'status-label ' + newColor;
-            if(newStatus === 'up' || newStatus === 'down') statusLabel.classList.add(newStatus);
-
-            barsDiv.querySelectorAll('.bar').forEach(bar => {
-              bar.className = 'bar ' + newColor;
-            });
+            const detailsText = monitorDiv.dataset.details;
+            if(incidentContainer.classList.contains('active') && incidentContainer.dataset.monitor === monitorName) {
+              incidentContainer.classList.remove('active');
+              incidentContainer.dataset.monitor = '';
+              incidentContainer.innerHTML = '';
+              return;
+            }
+            incidentContainer.dataset.monitor = monitorName;
+            incidentContainer.innerHTML = '';
+            const incidentItem = document.createElement('div');
+            incidentItem.classList.add('incident-item', colorClass);
+            incidentItem.textContent = detailsText;
+            incidentContainer.appendChild(incidentItem);
+            incidentContainer.classList.add('active');
+            incidentContainer.scrollIntoView({behavior:'smooth'});
           });
 
           categoryDiv.appendChild(monitorDiv);
