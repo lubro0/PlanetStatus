@@ -16,18 +16,22 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: start;
-      padding: 40px;
+      justify-content: center;
       box-sizing: border-box;
+    }
+    #status-container {
+      width: 100%;
+      max-width: 600px;
     }
     .category {
       margin-bottom: 40px;
-      width: 100%;
-      max-width: 600px;
       background: #121212;
       padding: 20px;
       border-radius: 12px;
       text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
     .category h2 {
       margin: 0 0 20px 0;
@@ -37,41 +41,67 @@
     .monitor {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
       background: #1e1e1e;
-      padding: 10px 20px;
+      padding: 15px 25px;
       border-radius: 10px;
       margin: 10px 0;
+      gap: 20px;
+      cursor: pointer;
+      min-width: 320px;
+      user-select: none;
+      transition: background-color 0.3s ease;
+    }
+    .monitor:hover {
+      background-color: #333;
     }
     .monitor-name {
       font-size: 16px;
       color: #aaa;
+      flex: 1;
+      text-align: left;
     }
     .bars {
       display: flex;
       gap: 4px;
     }
     .bar {
-      width: 8px;
-      height: 20px;
+      width: 12px;
+      height: 24px;
       background-color: #2e2e2e;
       border-radius: 4px;
+      transition: background-color 0.3s ease;
     }
-    .bar.online {
+    .bar.red {
+      background-color: #e82e2e;
+    }
+    .bar.green {
       background-color: #2ee882;
+    }
+    .bar.yellow {
+      background-color: #e8d82e;
     }
     .status-label {
-      background-color: #2ee882;
-      color: #000;
-      padding: 2px 10px;
+      padding: 4px 14px;
       border-radius: 9999px;
       font-weight: bold;
       font-size: 14px;
       margin-left: 10px;
+      min-width: 56px;
+      text-align: center;
+      user-select: none;
     }
-    .status-label.down {
+    .status-label.red {
       background-color: #e82e2e;
       color: #fff;
+    }
+    .status-label.green {
+      background-color: #2ee882;
+      color: #000;
+    }
+    .status-label.yellow {
+      background-color: #e8d82e;
+      color: #000;
     }
   </style>
 </head>
@@ -79,6 +109,22 @@
   <div id="status-container"></div>
 
   <script>
+    const statusColors = {
+      red: 'red',
+      green: 'green',
+      yellow: 'yellow',
+      up: 'green',
+      down: 'red',
+      warning: 'yellow'
+    };
+
+    const statuses = ['red', 'green', 'yellow'];
+
+    function nextStatus(current) {
+      const index = statuses.indexOf(current);
+      return statuses[(index + 1) % statuses.length];
+    }
+
     async function loadStatus() {
       const response = await fetch('status.txt');
       const text = await response.text();
@@ -99,9 +145,13 @@
           categoryDiv.appendChild(h2);
           container.appendChild(categoryDiv);
         } else if(currentCategory && line.includes('=')) {
-          const [monitorName, status] = line.split('=').map(s => s.trim());
+          let [monitorName, status] = line.split('=').map(s => s.trim().toLowerCase());
+
+          if(!statusColors[status]) status = 'red';
+
           const monitorDiv = document.createElement('div');
           monitorDiv.classList.add('monitor');
+          monitorDiv.dataset.status = status;
 
           const nameDiv = document.createElement('div');
           nameDiv.classList.add('monitor-name');
@@ -112,23 +162,31 @@
 
           for(let i=0; i<5; i++) {
             const bar = document.createElement('div');
-            bar.classList.add('bar');
-            if(status.toLowerCase() === 'up') bar.classList.add('online');
+            bar.classList.add('bar', statusColors[status]);
             barsDiv.appendChild(bar);
           }
 
           const statusLabel = document.createElement('div');
-          statusLabel.classList.add('status-label');
-          if(status.toLowerCase() === 'up') {
-            statusLabel.textContent = 'Up';
-          } else {
-            statusLabel.textContent = 'Down';
-            statusLabel.classList.add('down');
-          }
+          statusLabel.classList.add('status-label', statusColors[status]);
+          statusLabel.textContent = status.charAt(0).toUpperCase() + status.slice(1);
 
           monitorDiv.appendChild(nameDiv);
           monitorDiv.appendChild(barsDiv);
           monitorDiv.appendChild(statusLabel);
+
+          monitorDiv.addEventListener('click', () => {
+            let currentStatus = monitorDiv.dataset.status;
+            let newStatus = nextStatus(currentStatus);
+            monitorDiv.dataset.status = newStatus;
+
+            statusLabel.textContent = newStatus.charAt(0).toUpperCase() + newStatus.slice(1);
+            statusLabel.className = 'status-label ' + statusColors[newStatus];
+
+            barsDiv.querySelectorAll('.bar').forEach(bar => {
+              bar.className = 'bar ' + statusColors[newStatus];
+            });
+          });
+
           categoryDiv.appendChild(monitorDiv);
         }
       });
