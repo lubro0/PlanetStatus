@@ -60,6 +60,7 @@
       color: #aaa;
       flex: 1;
       text-align: left;
+      text-transform: none;
     }
     .bars {
       display: flex;
@@ -90,6 +91,7 @@
       min-width: 56px;
       text-align: center;
       user-select: none;
+      text-transform: none;
     }
     .status-label.red {
       background-color: #e82e2e;
@@ -110,15 +112,15 @@
 
   <script>
     const statusColors = {
-      red: 'red',
-      green: 'green',
-      yellow: 'yellow',
-      up: 'green',
-      down: 'red',
-      warning: 'yellow'
+      RED: 'red',
+      GREEN: 'green',
+      YELLOW: 'yellow',
+      UP: 'green',
+      DOWN: 'red',
+      WARNING: 'yellow'
     };
 
-    const statuses = ['red', 'green', 'yellow'];
+    const statuses = ['RED', 'GREEN', 'YELLOW'];
 
     function nextStatus(current) {
       const index = statuses.indexOf(current);
@@ -145,9 +147,9 @@
           categoryDiv.appendChild(h2);
           container.appendChild(categoryDiv);
         } else if(currentCategory && line.includes('=')) {
-          let [monitorName, status] = line.split('=').map(s => s.trim().toLowerCase());
+          let [monitorName, status] = line.split('=').map(s => s.trim().toUpperCase());
 
-          if(!statusColors[status]) status = 'red';
+          if(!statusColors[status]) status = 'RED';
 
           const monitorDiv = document.createElement('div');
           monitorDiv.classList.add('monitor');
@@ -168,7 +170,7 @@
 
           const statusLabel = document.createElement('div');
           statusLabel.classList.add('status-label', statusColors[status]);
-          statusLabel.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+          statusLabel.textContent = status;
 
           monitorDiv.appendChild(nameDiv);
           monitorDiv.appendChild(barsDiv);
@@ -179,7 +181,7 @@
             let newStatus = nextStatus(currentStatus);
             monitorDiv.dataset.status = newStatus;
 
-            statusLabel.textContent = newStatus.charAt(0).toUpperCase() + newStatus.slice(1);
+            statusLabel.textContent = newStatus;
             statusLabel.className = 'status-label ' + statusColors[newStatus];
 
             barsDiv.querySelectorAll('.bar').forEach(bar => {
